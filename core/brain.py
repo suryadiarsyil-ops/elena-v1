@@ -15,11 +15,11 @@ def think(user_input, api_key, model, autonomous=False):
         return offline, "offline"
 
     # 2. TOOL AWARENESS
-    if user_input == "/pwd":
-        return get_pwd(), "tool"
-
-    if user_input == "/ls":
+    if user_input in ("/ls", "ls"):
         return "\n".join(list_files()), "tool"
+
+    if user_input in ("/pwd", "pwd"):
+        return get_pwd(), "tool"
 
     if user_input.startswith("/read "):
         path = user_input.split(" ", 1)[1]
