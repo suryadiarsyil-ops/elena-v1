@@ -1,19 +1,11 @@
-# openrouter.py
+# adapters/openrouter.py
 
 import requests
-import os
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
+
 def ask_cloud(prompt, api_key, model):
-    r = requests.post(...)
-    data = r.json()
-
-    if "choices" not in data:
-        return f"[CLOUD ERROR] {data}"
-
-    return data["choices"][0]["message"]["content"]
-
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
@@ -29,15 +21,26 @@ def ask_cloud(prompt, api_key, model):
         "temperature": 0.7
     }
 
-    r = requests.post(OPENROUTER_URL, headers=headers, json=payload)
+    try:
+        r = requests.post(
+            OPENROUTER_URL,
+            headers=headers,
+            json=payload,
+            timeout=30
+        )
+    except Exception as e:
+        return f"[NETWORK ERROR] {e}"
 
     try:
         data = r.json()
     except Exception:
-        return "[ERROR] Response bukan JSON"
+        return "[CLOUD ERROR] Response bukan JSON"
 
-    # 🚨 INI KUNCI NYA
+    # HARD GUARD: API error / quota / auth / model invalid
     if "choices" not in data:
         return f"[API ERROR] {data}"
 
-    return data["choices"][0]["message"]["content"]
+    try:
+        return data["choices"][0]["message"]["content"]
+    except Exception as e:
+        return f"[PARSE ERROR] {e} | raw={data}"
