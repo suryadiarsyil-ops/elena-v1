@@ -25,11 +25,12 @@ def think(user_input, api_key, model, autonomous=False):
         return read_file(path), "tool"
 
     # AUTONOMOUS MODE
-    if autonomous:
-        tasks = plan(user_input)
-        output = "Autonomous plan:\n"
-        for i, t in enumerate(tasks, 1):
-            output += f"\nStep {i}: {t}\n→ {execute(t)}\n"
+try:
+    result = execute(t)
+except Exception as e:
+    result = f"[EXEC ERROR] {e}"
+
+output += f"\nStep {i}: {t}\n→ {result}\n"
         store_memory(output)
         return output, "autonomous"
 
@@ -47,11 +48,12 @@ def think(user_input, api_key, model, autonomous=False):
     prompt += user_input
 
     # core/brain.py
-    print("[DEBUG] mode: cloud")
+    print(f"[DEBUG] mode=cloud | prompt_len={len(prompt)}")
+    
     response = ask_cloud(prompt, api_key, model)
 
-    if len(response) > 50:
-        store_memory(user_input)
-        store_memory(response)
+    if isinstance(response, str) and len(response) > 50:
+    store_memory(user_input)
+    store_memory(response)
 
     return response, "cloud+memory"
